@@ -6,6 +6,7 @@ import config from './config';
 const app = express();
 
 // Middleware
+app.use(express.static('public'));
 app.use(express.json());
 app.use(cors({ origin: config.origin || '*', credentials: true }));
 app.use(cookieParser());
@@ -19,8 +20,10 @@ app.get('/', (_, res) => {
 });
 
 // Import routes
+import routes from './routes/index';
 
 // API routes
+app.use('/api/v1', routes);
 
 // Not found route
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
