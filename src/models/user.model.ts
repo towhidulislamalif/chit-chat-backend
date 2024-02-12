@@ -1,26 +1,26 @@
 import mongoose from 'mongoose';
-import { IUser, IUserMethods, UserModel } from '../interface/user.interface';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import config from '../config';
+import { IUser, IUserMethods, UserModel } from '../interface/user.interface';
 
 const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
   {
-    first_name: {
+    firstname: {
       type: String,
       trim: true,
       required: [true, 'First name is required'],
     },
-    last_name: {
+    lastname: {
       type: String,
       trim: true,
       required: [true, 'Last name is required'],
     },
     email: {
       type: String,
-      unique: true,
       trim: true,
       lowercase: true,
+      unique: true,
       required: [true, 'Email address is required'],
       validate: {
         validator: (value: string) => /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/.test(value),
@@ -36,7 +36,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
           'Password must be at least 8 characters long and include at least one lowercase letter, one uppercase letter, and one digit.',
       },
     },
-    date_of_birth: {
+    dateOfBirth: {
       type: String,
       required: [true, 'Date of birth is required'],
       validate: {
@@ -52,7 +52,7 @@ const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
         message: 'Gender must be either "male" or "female"',
       },
     },
-    profile_picture: {
+    avatar: {
       type: String,
       default: 'https://res.cloudinary.com/touhidul/image/upload/cqm1lxzl94txu7me5zux.jpg',
     },
@@ -72,7 +72,7 @@ userSchema.pre('save', async function (next) {
 });
 
 // Method for comparing passwords
-userSchema.methods.passwordCompare = async function (password: string): Promise<boolean> {
+userSchema.methods.comparePassword = async function (password: string): Promise<boolean> {
   return await bcrypt.compare(password, this.password);
 };
 
@@ -81,8 +81,8 @@ userSchema.methods.generateAccessToken = function (): string {
   return jwt.sign(
     {
       _id: this._id,
-      first_name: this.first_name,
-      last_name: this.last_name,
+      firstname: this.firstname,
+      lastname: this.lastname,
       email: this.email,
     },
     config.access_token_secret as string,
@@ -106,4 +106,5 @@ userSchema.methods.generateRefreshToken = function (): string {
 };
 
 const User = mongoose.model<IUser, UserModel>('User', userSchema);
+
 export default User;

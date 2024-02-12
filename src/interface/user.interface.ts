@@ -3,17 +3,17 @@ import mongoose from 'mongoose';
 
 // Interface for user data
 export interface IUser {
-  first_name: string;
-  last_name: string;
+  firstname: string;
+  lastname: string;
   email: string;
   password: string;
-  date_of_birth: string;
+  dateOfBirth: string;
   gender: 'male' | 'female';
-  profile_picture: string;
+  avatar: string;
 }
 
 export interface IUserMethods {
-  passwordCompare: (password: string) => Promise<boolean>;
+  comparePassword: (password: string) => Promise<boolean>;
   generateAccessToken: () => string;
   generateRefreshToken: () => string;
 }

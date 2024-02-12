@@ -5,11 +5,10 @@ import { uploadFileToCloudinary } from '../utils/cloudinary';
 import { sendAPIResponse } from '../utils/sendAPIResponse';
 
 export const registerUser = asyncRequestHandler(async (req, res) => {
-  const { first_name, last_name, email, password, date_of_birth, gender, profile_picture } =
-    req.body;
+  const { firstname, lastname, email, password, dateOfBirth, gender, avatar } = req.body;
 
   // Validate required fields
-  if (!first_name || !last_name || !email || !password || !date_of_birth || !gender) {
+  if (!firstname || !lastname || !email || !password || !dateOfBirth || !gender) {
     throw new APIError(400, 'All fields are required');
   }
 
@@ -20,31 +19,34 @@ export const registerUser = asyncRequestHandler(async (req, res) => {
   }
 
   // Handle profile picture upload to Cloudinary
-  const localPicturePath = req.file?.path;
-  const identifier = `${first_name}-${last_name}`.toLowerCase();
-  let profileImg = profile_picture;
+  const imageFilePath = req.file?.path;
+  const identifier = `${firstname}-${lastname}`.toLowerCase();
+  let profileImage = avatar;
 
-  if (localPicturePath) {
-    const image = await uploadFileToCloudinary(localPicturePath, identifier);
-    profileImg = image?.url;
+  if (imageFilePath) {
+    const uploadedImage = await uploadFileToCloudinary(imageFilePath, identifier);
+    profileImage = uploadedImage?.url;
   }
 
+  // Create a new user
   const createdUser = await User.create({
-    first_name,
-    last_name,
+    firstname,
+    lastname,
     email,
     password,
-    date_of_birth,
+    dateOfBirth,
     gender,
-    profile_picture: profileImg,
+    avatar: profileImage,
   });
-  const new_user = await User.findById(createdUser._id).select('-password');
+
+  // Fetch the created user excluding the password field
+  const newUser = await User.findById(createdUser._id).select('-password');
 
   // Send API response
   sendAPIResponse(res, {
     success: true,
     status: 201,
     message: 'User registration successful',
-    data: new_user,
+    data: newUser,
   });
 });
