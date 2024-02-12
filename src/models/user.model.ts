@@ -1,8 +1,10 @@
 import mongoose from 'mongoose';
-import { IUser } from '../interface/user.interface';
+import { IUser, IUserMethods, UserModel } from '../interface/user.interface';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import config from '../config';
 
-const userSchema = new mongoose.Schema<IUser>(
+const userSchema = new mongoose.Schema<IUser, UserModel, IUserMethods>(
   {
     first_name: {
       type: String,
@@ -69,5 +71,39 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-const User = mongoose.model<IUser>('User', userSchema);
+// Method for comparing passwords
+userSchema.methods.passwordCompare = async function (password: string): Promise<boolean> {
+  return await bcrypt.compare(password, this.password);
+};
+
+// Method for generating access token
+userSchema.methods.generateAccessToken = function (): string {
+  return jwt.sign(
+    {
+      _id: this._id,
+      first_name: this.first_name,
+      last_name: this.last_name,
+      email: this.email,
+    },
+    config.access_token_secret as string,
+    {
+      expiresIn: config.access_token_expiry,
+    },
+  );
+};
+
+// Method for generating refresh token
+userSchema.methods.generateRefreshToken = function (): string {
+  return jwt.sign(
+    {
+      _id: this._id,
+    },
+    config.refresh_token_secret as string,
+    {
+      expiresIn: config.refresh_token_expiry,
+    },
+  );
+};
+
+const User = mongoose.model<IUser, UserModel>('User', userSchema);
 export default User;

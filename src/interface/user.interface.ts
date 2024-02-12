@@ -1,3 +1,7 @@
+/* eslint-disable no-unused-vars */
+import mongoose from 'mongoose';
+
+// Interface for user data
 export interface IUser {
   first_name: string;
   last_name: string;
@@ -7,3 +11,11 @@ export interface IUser {
   gender: 'male' | 'female';
   profile_picture: string;
 }
+
+export interface IUserMethods {
+  passwordCompare: (password: string) => Promise<boolean>;
+  generateAccessToken: () => string;
+  generateRefreshToken: () => string;
+}
+
+export type UserModel = mongoose.Model<IUser, Record<string, unknown>, IUserMethods>;
