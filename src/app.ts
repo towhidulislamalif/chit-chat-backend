@@ -21,21 +21,30 @@ app.get('/', (_, res) => {
 
 // Import routes
 import routes from './routes/index';
+import globalErrorHandler from './middleware/globalErrorHandler';
 
 // API routes
 app.use('/api/v1', routes);
 
 // Not found route
 // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-app.use((_, res, next) => {
+app.use((req, res, next) => {
   res.status(404).json({
     success: false,
-    code: 404,
-    message:
+    errorCode: 404,
+    errorMessage:
       'The requested resource was not found on the server. Please check the URL and try again.',
+    errorSources: [
+      {
+        path: req.url,
+        message:
+          'The requested resource was not found on the server. Please check the URL and try again.',
+      },
+    ],
   });
 });
 
 // Global error handler middleware
+app.use(globalErrorHandler);
 
 export default app;
